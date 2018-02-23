@@ -106,7 +106,8 @@ ls -l /dev
 
 ![Rpi3_GPIO](/Assets/RPi3_GPIO.png)  
 
-连接关系如下: 
+连接关系如下:  
+
 Raspberry Pi 3 | TFmini
 ---------|----------
  +5V | 5V(红)
