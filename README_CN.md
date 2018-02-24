@@ -47,7 +47,9 @@ sudo raspi-config
 
 选择 5. Interfacing-Options -> P6 Serial -> Yes, 使能串口.  
 
-这样就可以把 借来的读卡器/网线/鼠标/键盘/显示器/HDMI线一大堆东西还回去了. 然后我们就可以在电脑上通过 SSH/VNC/串口 的任意一种连接树莓派3了, 这里我们选择SSH, 所以首先要获取树莓派的IP地址.  
+这样就可以把 借来的读卡器/网线/鼠标/键盘/显示器/HDMI线一大堆东西还回去了.  至于树莓派, 放到小车上, 飞行器上, 办公室/实验室其他地方都是可以的, 只要同一个局域网的WiFi覆盖到就可以.  
+
+然后我们就可以在电脑上通过 SSH/VNC/串口 的任意一种连接树莓派3了, 这里我们选择SSH, 所以首先要获取树莓派的IP地址.  
 
 登录路由器(默认192.168.1.1), 或者使用 [Angry IP Scanner](http://angryip.org/download/), 查找 raspberrypi 的IP, 默认应该在 192.168.1.1~192.168.1.255 之间. 我这里是192.168.1.231.   
 
@@ -65,14 +67,14 @@ sudo reboot
 
 重启后重新连接SSH(IP地址可能会变).   
 
-如果连接串口的话, 可能就会看到出啊口打印一些类似下面的信息:  
+如果连接串口的话, 可能就会看到引出串口打印一些类似下面的信息:  
 
 ```
 Raspbian GNU/Linux 9 raspberrypi ttyS0
 raspberrypi login: 
 ``` 
 
-表明这个时候的串口用作 console(控制台) 了, 这不是我们想要的, 我们只是想连接外设用, 所以需要disable console:  
+表明这个时候的串口用作 console(控制台) 了, 这不是我们想要的(console默认连接的是serial0, 115200), 我们只是想连接外设用, 所以需要disable console:  
 
 ```
 sudo nano /boot/cmdline.txt
@@ -118,7 +120,7 @@ ls -l /dev
 
 简言之, 我们关闭了串口的console, 然后把硬件串口映射到TXD0, RXD0. 使用的时候引出串口是 /dev/ttyAMA0.  
 
-树莓派通过WiFi和PC在同一个局域网中, 连接方式上, 命令行用SSH, 图形界面用VNC, 文件传输可以使用Filezilla(sftp://树莓派IP, 用户名pi, 密码raspberry). 
+树莓派通过WiFi和PC在同一个局域网中, 连接方式上, 命令行用SSH, 图形界面用VNC, 文件传输可以使用Filezilla(sftp://树莓派IP, 用户名pi, 密码raspberry). 如果我们配置Samba, 在电脑上就可以像编辑本地文件一样编辑树莓派的代码, 用VS Code之类的编辑器就非常方便了, 感兴趣的可以自己搜索, 这里限于篇幅就略了.   
 
 
 ## 连接TFmini 到树莓派引出串口  
