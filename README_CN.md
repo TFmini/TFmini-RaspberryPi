@@ -1,5 +1,26 @@
 # TFmini-RaspberryPi
 TFmini在树莓派3上的例子.  
+树莓派既有引出串口, IO口, 又有USB, 所以可以有很多种方法连接TFmini:  
+
+- 树莓派引出串口(RXD0和TXD0)
+- USB转串口(CP2102, CH341...)  
+- 其他引出IO口模拟串口(通过pigpio等)
+
+终端输入 `ls /dev` ,树莓派3串口的识别关系如下(可能有出入?):  
+
+
+外设 | 树莓派(/dev/) 
+---------|----------
+ 硬件串口 | ttyAMA0 
+ 软件串口 | ttyS0
+ Arduino | ttyACM0, ttyACM1... 
+ USB转串口(CP2102, CH341...) | ttyUSB0, ttyUSB1...
+
+ 树莓派3自带硬件串口(PL011)和软件串口(mini UART), 硬件串口默认连接蓝牙BT, 引出串口(RXD0和TXD0)默认也是关闭的, 可软件配置硬件串口不和蓝牙相连, 引出串口可配置连接硬件串口还是软件串口.  
+
+ **硬件串口**精度高, 配置全, 连接TFmini甚至可能不需要校验. **软件串口**连接TFmini校验不能少. **模拟串口**精度可能更差, 除了校验, 最好加上阈值判定来保证数值正确性.   
+
+ 编程语言上, 参考 [RPi GPIO Code Samples](https://elinux.org/RPi_GPIO_Code_Samples#pigpio_2)来看, C, C#, Ruby, Python, Java...各种语言应该都是可以的. 这里我们选择Python作为例子. 有其他需求可以在issues里面提.  
 
 ## 安装和配置Raspbian
 已经安装和配置好树莓派系统的略过本节.  
@@ -113,7 +134,9 @@ Raspberry Pi 3 | TFmini
  +5V | 5V(红)
  GND | GND(黑) 
  TXD0 | RX(白) 
- RXD0 | TX(绿) 
+ RXD0 | TX(绿)   
+
+ 实际上, 我们这里没有给TFmini发命令, 只用接收TFmini发来的数据即可, 所以, TXD0可以不接或者连接其他外设.  
 
 tfmini.py 文件如下: 
 
@@ -147,5 +170,63 @@ if __name__ == '__main__':
 
 ```
 
-`python tfmini.py` 运行, 即可看到结果, 注意这里用python3不会工作. 
+`python tfmini.py` 运行, 即可看到结果, 注意这里用python3不会工作.   
 
+## 连接TFmini 到树莓派其他IO口  
+
+参考上节中树莓派的IO口图, 我们把 TX(绿) 连到GPIO23上, RX(白)这里没有用上, 可以悬空. 模拟串口数据接收不太稳定, 所以我们代码中加上了校验checksum和阈值筛选, 尽量避免数据错误.  
+
+tfmini_ss.py 代码如下:  
+
+```Python
+# -*- coding: utf-8 -*
+import pigpio
+import time
+
+RX = 23
+
+pi = pigpio.pi()
+pi.set_mode(RX, pigpio.INPUT)
+pi.bb_serial_read_open(RX, 115200) 
+
+def getTFminiData():
+	while True:
+		#print("#############")
+		time.sleep(0.05)	#change the value if needed
+		(count, recv) = pi.bb_serial_read(RX)
+		if count > 8:
+			for i in range(0, count-9):
+				if recv[i] == 89 and recv[i+1] == 89: # 0x59 is 89
+					checksum = 0
+					for j in range(0, 8):
+						checksum = checksum + recv[i+j]
+					checksum = checksum % 256
+					if checksum == recv[i+8]:
+						distance = recv[i+2] + recv[i+3] * 256
+						strength = recv[i+4] + recv[i+5] * 256
+						if distance <= 1200 and strength < 2000:
+							print(distance, strength) 
+						#else:
+							# raise ValueError('distance error: %d' % distance)	
+						#i = i + 9
+
+if __name__ == '__main__':
+	try:
+		getTFminiData()
+	except:  
+		pi.bb_serial_read_close(RX)
+		pi.stop()
+ 
+```
+
+运行:  
+
+```Shell
+# pigpio scripts require that the pigpio daemon be running.
+sudo pigpiod
+python tfmini_ss.py
+```  
+
+模拟串口尽管进度较差, 但好处太多, 比如树莓派就那一个宝贝的引出串口, 可能轮不到连接TFmini, 用模拟串口就可以随意找一个IO连接TFmini的TX, 这样就留出了宝贵的IO口, 而且, 有了模拟串口, 每个IO口都可以连接一个TFmini, 同时连接多个TFmini, 再也不用担心串口不够用的问题.   
+
+当然树莓派的USB毕竟也不是摆设, 连接多个TFmini也可以用通过USB转串口(CP2102, CH341等)插到USB上去, 再多还有USB Hub可以用. 
