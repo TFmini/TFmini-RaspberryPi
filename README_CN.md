@@ -20,7 +20,7 @@ TFmini在树莓派3上的例子.
 
  **硬件串口**精度高, 配置全, 连接TFmini甚至可能不需要校验. **软件串口**连接TFmini校验不能少. **模拟串口**精度可能更差, 除了校验, 最好加上阈值判定来保证数值正确性.   
 
- 编程语言上, 参考 [RPi GPIO Code Samples](https://elinux.org/RPi_GPIO_Code_Samples#pigpio_2)来看, C, C#, Ruby, Python, Java...各种语言应该都是可以的. 这里我们选择Python作为例子. 有其他需求可以在issues里面提.  
+ 编程语言上, 参考 [RPi GPIO Code Samples](https://elinux.org/RPi_GPIO_Code_Samples#pigpio_2) 来看, C, C#, Ruby, Python, Java...各种语言应该都是可以的. 这里我们选择Python作为例子. 有其他需求可以在issues里面提.  
 
 ## 安装和配置Raspbian
 已经安装和配置好树莓派系统的略过本节.  
@@ -192,32 +192,32 @@ pi.set_mode(RX, pigpio.INPUT)
 pi.bb_serial_read_open(RX, 115200) 
 
 def getTFminiData():
-	while True:
-		#print("#############")
-		time.sleep(0.05)	#change the value if needed
-		(count, recv) = pi.bb_serial_read(RX)
-		if count > 8:
-			for i in range(0, count-9):
-				if recv[i] == 89 and recv[i+1] == 89: # 0x59 is 89
-					checksum = 0
-					for j in range(0, 8):
-						checksum = checksum + recv[i+j]
-					checksum = checksum % 256
-					if checksum == recv[i+8]:
-						distance = recv[i+2] + recv[i+3] * 256
-						strength = recv[i+4] + recv[i+5] * 256
-						if distance <= 1200 and strength < 2000:
-							print(distance, strength) 
-						#else:
-							# raise ValueError('distance error: %d' % distance)	
-						#i = i + 9
+  while True:
+    #print("#############")
+    time.sleep(0.05)	#change the value if needed
+    (count, recv) = pi.bb_serial_read(RX)
+    if count > 8:
+      for i in range(0, count-9):
+        if recv[i] == 89 and recv[i+1] == 89: # 0x59 is 89
+          checksum = 0
+          for j in range(0, 8):
+            checksum = checksum + recv[i+j]
+          checksum = checksum % 256
+          if checksum == recv[i+8]:
+            distance = recv[i+2] + recv[i+3] * 256
+            strength = recv[i+4] + recv[i+5] * 256
+            if distance <= 1200 and strength < 2000:
+              print(distance, strength) 
+            #else:
+              # raise ValueError('distance error: %d' % distance)	
+            #i = i + 9
 
 if __name__ == '__main__':
-	try:
-		getTFminiData()
-	except:  
-		pi.bb_serial_read_close(RX)
-		pi.stop()
+  try:
+    getTFminiData()
+  except:  
+    pi.bb_serial_read_close(RX)
+    pi.stop()
  
 ```
 
