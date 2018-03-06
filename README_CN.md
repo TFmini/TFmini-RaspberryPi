@@ -153,12 +153,13 @@ def getTFminiData():
         count = ser.in_waiting
         if count > 8:
             recv = ser.read(9)
+            ser.reset_input_buffer()
             if recv[0] == 'Y' and recv[1] == 'Y': # 0x59 is 'Y'
                 low = int(recv[2].encode('hex'), 16)
                 high = int(recv[3].encode('hex'), 16)
                 distance = low + high * 256
                 print(distance)
-                ser.reset_input_buffer()
+                
 
 
 if __name__ == '__main__':
@@ -188,7 +189,8 @@ def getTFminiData():
         #time.sleep(0.1)
         count = ser.in_waiting
         if count > 8:
-            recv = ser.read(9)    
+            recv = ser.read(9)   
+            ser.reset_input_buffer() 
             # type(recv), 'str' in python2(recv[0] = 'Y'), 'bytes' in python3(recv[0] = 89)
             # type(recv[0]), 'str' in python2, 'int' in python3 
             
@@ -206,7 +208,6 @@ def getTFminiData():
                 distance = lowD + highD * 256
                 strength = lowS + highS * 256
                 print(distance, strength)
-                ser.reset_input_buffer()
             
             # you can also distinguish python2 and python3: 
             #import sys
