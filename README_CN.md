@@ -1,5 +1,6 @@
 # TFmini-RaspberryPi
-TFmini在树莓派3上的例子.  
+TFmini在树莓派3上的例子. English version [README_EN.md](/README_EN.md).  
+
 树莓派既有引出串口, IO口, 又有USB, 所以可以有很多种方法连接TFmini:  
 
 - 树莓派引出串口(RXD0和TXD0)
