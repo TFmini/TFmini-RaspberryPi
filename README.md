@@ -1,4 +1,6 @@
-# TFmini-RaspberryPi
+# TFmini-RaspberryPi  
+**Note: also suitable for TFmini Plus**  
+
 The example of using TFmini on Raspberry Pi 3. 中文版参考 [README_CN.md](/README_CN.md).  
    
 Raspberry Pi has serial port, IO port and USB, so there are a lot of way to connect it with TFmini:
